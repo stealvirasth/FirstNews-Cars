@@ -1,0 +1,15 @@
+{
+  "name": "car-usage-tracker",
+  "version": "1.0.0",
+  "description": "ระบบบันทึกการใช้รถพร้อมแผนที่",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step'"
+  },
+  "dependencies": {
+    "mongodb": "^5.8.0"
+  },
+  "keywords": ["car", "tracking", "line-liff"],
+  "author": "Your Name",
+  "license": "MIT"
+}

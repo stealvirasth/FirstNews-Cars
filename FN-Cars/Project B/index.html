@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CAR LOG PRO | ระบบบริหารจัดการยานพาหนะ</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2e7d32;
+      --primary-dark: #1b5e20;
+      --primary-light: #81c784;
+      --primary-soft: #e8f5e9;
+      --primary-bg: #f1f8e9;
+      --secondary: #455a64;
+      --accent: #4caf50;
+      --success: #27ae60;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --text-primary: #2c3e50;
+      --text-secondary: #5d6d7e;
+      --text-tertiary: #85929e;
+      --border-light: #e5e8ea;
+      --white: #ffffff;
+      --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --status-pending-bg: #FEF3C7;
+      --status-pending-text: #D97706;
+      --status-returned-bg: #D1FAE5;
+      --status-returned-text: #059669;
+    }
+
+    body {
+      font-family: 'Inter', 'Kanit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .app-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 40px;
+    }
+
+    @media (max-width: 1024px) {
+      .app-container { padding: 24px 20px; }
+    }
+    @media (max-width: 768px) {
+      .app-container { padding: 16px; }
+    }
+
+    /* Header Premium */
+    .page-header {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      border-radius: var(--radius-xl);
+      padding: 20px 32px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+
+    .page-header::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
+    }
+
+    .title-section h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .title-section p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .title-section i {
+      margin-right: 8px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Header Action Buttons Style */
+    .header-action-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.15);
+      padding: 5px 15px;
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+    }
+
+    .header-action-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: white;
+    }
+
+    .header-action-group select {
+      padding: 8px 12px;
+      border-radius: 30px;
+      border: none;
+      font-size: 13px;
+      background: white;
+      color: #2e7d32;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-header {
+      background: white;
+      color: #2e7d32;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header:hover {
+      background: #e8f5e9;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .custom-date-range {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .custom-date-range input {
+      padding: 6px 10px;
+      border-radius: 20px;
+      border: none;
+      font-size: 12px;
+    }
+
+    /* Stats Cards Premium */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #2e7d32, #81c784, #a5d6a7);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2e7d32;
+      font-size: 24px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    /* Charts Section */
+    .charts-section {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .charts-section { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      transition: transform 0.3s ease;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e8f5e9;
+    }
+
+    .chart-header i {
+      color: #2e7d32;
+      font-size: 18px;
+    }
+
+    .chart-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .chart-container {
+      height: 260px;
+      position: relative;
+    }
+
+    /* Filter Bar */
+    .filter-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-group input,
+    .filter-group select {
+      padding: 10px 12px;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      background: var(--white);
+      transition: all 0.2s;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      outline: none;
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46,125,50,0.1);
+    }
+
+    .status-filter-group {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    
+    .status-filter-btn {
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--border-light);
+      background: var(--white);
+      color: var(--text-secondary);
+    }
+    
+    .status-filter-btn.active {
+      background: #2e7d32;
+      border-color: #2e7d32;
+      color: white;
+    }
+
+    /* Data Table */
+    .table-wrapper {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 16px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-tertiary);
+      background: #f1f8e9;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .data-table td {
+      padding: 14px 20px;
+      font-size: 14px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: #f1f8e9;
+    }
+
+    .driver-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .driver-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #2e7d32, #81c784);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .badge-vehicle {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .distance-value {
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .status-pending {
+      background-color: #FEF3C7;
+      color: #D97706;
+      border: 1px solid #FDE68A;
+    }
+    
+    .status-returned {
+      background-color: #D1FAE5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-tertiary);
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    /* Pagination */
+    .pagination-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-top: 1px solid var(--border-light);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    .pagination-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .page-btn {
+      background: var(--white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .page-btn:hover {
+      border-color: #2e7d32;
+      color: #2e7d32;
+    }
+
+    .page-btn.active {
+      background: #2e7d32;
+      border-color: #2e7d32;
+      color: white;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 10000;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid #e8f5e9;
+      border-top-color: #2e7d32;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Modal Premium - แสดงตรงกลาง */
+    .modal-custom .modal-dialog {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100% - 3.5rem);
+      margin: 0 auto;
+    }
+    
+    .modal-custom .modal-content {
+      border-radius: 24px;
+      border: none;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      overflow: hidden;
+      animation: modalSlideIn 0.3s ease;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-custom .modal-header {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      border-bottom: none;
+      padding: 20px 24px;
+    }
+
+    .modal-custom .modal-header .modal-title {
+      color: white;
+      font-weight: 600;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-custom .modal-header .btn-close {
+      display: none;
+    }
+
+    .modal-custom .modal-body {
+      padding: 24px;
+      background: #f8faf8;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .modal-custom .modal-footer {
+      border-top: 1px solid #e5e8ea;
+      padding: 16px 24px;
+      background: white;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-modal-close {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      color: white;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-modal-close i {
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-modal-close:hover {
+      background: linear-gradient(135deg, #1b5e20, #0e3d0f);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(46,125,50,0.3);
+    }
+
+    .btn-modal-close:hover i {
+      transform: scale(1.1);
+    }
+
+    /* Detail Sections - Clean Layout */
+    .detail-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .detail-col {
+      min-width: 0;
+    }
+
+    .detail-section {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      height: 100%;
+    }
+
+    .detail-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2e7d32;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e8f5e9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .driver-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .driver-avatar-lg {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .driver-details {
+      flex: 1;
+    }
+
+    .driver-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 4px;
+    }
+
+    .driver-phone, .driver-car {
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+
+    .driver-phone i, .driver-car i {
+      width: 20px;
+      color: #2e7d32;
+    }
+
+    .travel-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .travel-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px dashed #ecf0f1;
+    }
+
+    .travel-stat .stat-label {
+      font-size: 13px;
+      color: #7f8c8d;
+    }
+
+    .travel-stat .stat-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .travel-stat .stat-unit {
+      font-size: 11px;
+      font-weight: normal;
+      color: #95a5a6;
+    }
+
+    .reason-text {
+      font-size: 14px;
+      color: #2c3e50;
+      line-height: 1.6;
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .status-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .status-returned-box {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .status-pending-box {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .return-time, .duration-text {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .return-time i, .duration-text i {
+      color: #2e7d32;
+    }
+
+    .detail-section-full {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-top: 0;
+    }
+
+    .destinations-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .destination-card {
+      flex: 1;
+      min-width: 180px;
+      background: #f1f8e9;
+      border-radius: 12px;
+      padding: 12px;
+      border-left: 3px solid #2e7d32;
+    }
+
+    .dest-point {
+      font-weight: 600;
+      color: #2e7d32;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .dest-coord {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .coord-label {
+      color: #999;
+      margin-right: 6px;
+    }
+
+    .map-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #3498db;
+      text-decoration: none;
+    }
+
+    .map-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #e8f5e9; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #81c784; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2e7d32; }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .data-table th, .data-table td { padding: 10px 12px; font-size: 12px; }
+      .driver-avatar { width: 28px; height: 28px; font-size: 11px; }
+      .stat-value { font-size: 24px; }
+      .pagination-section { flex-direction: column; align-items: center; }
+      .header-action-group { flex-wrap: wrap; }
+      .custom-date-range { flex-wrap: wrap; }
+      .detail-row { grid-template-columns: 1fr; gap: 12px; }
+      .driver-info { flex-direction: column; text-align: center; }
+      .travel-stat { flex-direction: column; align-items: flex-start; gap: 4px; }
+      .destinations-grid { flex-direction: column; }
+      .destination-card { min-width: auto; }
+      .modal-custom .modal-dialog {
+        margin: 0 16px;
+      }
+      .modal-custom .modal-content {
+        max-width: calc(100% - 32px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loadingScreen" class="loading-overlay">
+  <div class="spinner"></div>
+  <div style="color: var(--text-secondary); font-size: 14px;">กำลังโหลดข้อมูล...</div>
+</div>
+
+<div class="app-container">
+  <!-- Header Premium with PDF Export and Clear Filters -->
+  <div class="page-header">
+    <div class="title-section">
+      <h1><i class="fas fa-car"></i> CAR LOG PRO</h1>
+      <p>ระบบบริหารจัดการยานพาหนะสำหรับองค์กร</p>
+    </div>
+    <div class="header-actions">
+      <!-- PDF Export Group -->
+      <div class="header-action-group">
+        <label><i class="fas fa-calendar-alt"></i> ช่วงเวลา</label>
+        <select id="pdfMonthFilterHeader">
+          <option value="all">ทั้งหมด</option>
+          <option value="this_month">เดือนนี้</option>
+          <option value="last_month">เดือนที่แล้ว</option>
+          <option value="custom">เลือกเอง</option>
+        </select>
+        <div id="customDateRangeHeader" class="custom-date-range" style="display: none;">
+          <input type="date" id="pdfDateFromHeader" placeholder="เริ่มต้น">
+          <input type="date" id="pdfDateToHeader" placeholder="สิ้นสุด">
+        </div>
+        <button class="btn-header" onclick="exportToPDFWithMonth()">
+          <i class="fas fa-file-pdf"></i> ส่งออก PDF
+        </button>
+      </div>
+      
+      <!-- Clear Filters Group -->
+      <div class="header-action-group">
+        <button class="btn-header" onclick="clearFilters()">
+          <i class="fas fa-eraser"></i> ล้างตัวกรอง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header"><div class="stat-icon"><i class="fas fa-car"></i></div></div>
+      <div class="stat-value" id="totalRecords">0</div>
+      <div class="stat-label">จำนวนการใช้ทั้งหมด</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header"><div class="stat-icon"><i class="fas fa-road"></i></div></div>
+      <div class="stat-value" id="totalDistance">0</div>
+      <div class="stat-label">ระยะทางรวม (กม.)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header"><div class="stat-icon"><i class="fas fa-clock"></i></div></div>
+      <div class="stat-value" id="pendingReturns">0</div>
+      <div class="stat-label">รอคืนรถ (รายการ)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header"><div class="stat-icon"><i class="fas fa-percent"></i></div></div>
+      <div class="stat-value" id="returnRate">0</div>
+      <div class="stat-label">อัตราการคืนรถ (%)</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-section">
+    <div class="chart-card">
+      <div class="chart-header"><i class="fas fa-chart-line"></i><h3>สถิติการใช้งานรายเดือน</h3></div>
+      <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><i class="fas fa-chart-pie"></i><h3>สัดส่วนการใช้รถ</h3></div>
+      <div class="chart-container"><canvas id="carUsageChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-section">
+    <div class="filter-grid">
+      <div class="filter-group"><label><i class="fas fa-search"></i> ค้นหา</label><input type="text" id="searchName" placeholder="ชื่อ / เบอร์ / สาเหตุ..."></div>
+      <div class="filter-group"><label><i class="fas fa-user"></i> ผู้ขับขี่</label><select id="filterName"><option value="">ทั้งหมด</option></select></div>
+      <div class="filter-group"><label><i class="fas fa-car"></i> ทะเบียนรถ</label><select id="filterCar"><option value="">ทั้งหมด</option></select></div>
+      <div class="filter-group"><label><i class="fas fa-calendar"></i> เริ่มต้น</label><input type="date" id="filterDateFrom"></div>
+      <div class="filter-group"><label><i class="fas fa-calendar"></i> สิ้นสุด</label><input type="date" id="filterDateTo"></div>
+      <div class="filter-group">
+        <label><i class="fas fa-exchange-alt"></i> สถานะ</label>
+        <div class="status-filter-group">
+          <button class="status-filter-btn active" data-status="all">ทั้งหมด</button>
+          <button class="status-filter-btn pending" data-status="pending">รอคืนรถ</button>
+          <button class="status-filter-btn returned" data-status="returned">คืนแล้ว</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr><th>วันที่/เวลา</th><th>ผู้ขับขี่</th><th>เบอร์โทร</th><th>ทะเบียนรถ</th><th>เลขไมล์</th><th>ระยะทาง</th><th>วัตถุประสงค์</th><th>สถานะ</th><th style="width:50px"></th></tr>
+      </thead>
+      <tbody id="recordsTable"><tr><td colspan="9" style="text-align:center; padding:60px"><i class="fas fa-database" style="font-size:40px; color:#ccc; margin-bottom:12px; display:block"></i>ไม่มีข้อมูล<br>กรุณาเลือกเงื่อนไขอื่นหรือเพิ่มข้อมูล</div>NonNull</tbody>
+    </table>
+    <div class="pagination-section"><div class="pagination-info" id="paginationInfo">แสดง 0-0 จาก 0 รายการ</div><div class="pagination-buttons" id="pagination"></div></div>
+  </div>
+</div>
+
+<script>
+// CONFIG
+const CONFIG = { 
+  API_BASE_URL: 'https://cars-maps.netlify.app/.netlify/functions', 
+  RECORDS_PER_PAGE: 10 
+};
+
+let monthlyChart, carUsageChart;
+let allRecords = [], filteredRecords = [], currentPage = 1;
+let currentStatusFilter = 'all';
+
+function showLoading(show) { document.getElementById('loadingScreen').style.display = show ? 'flex' : 'none'; }
+
+function getStatusBadge(returnStatus) {
+  if (returnStatus === 'returned') {
+    return '<span class="status-badge status-returned"><i class="fas fa-check-circle"></i> คืนรถสำเร็จ</span>';
+  } else {
+    return '<span class="status-badge status-pending"><i class="fas fa-clock"></i> รอการคืนรถ</span>';
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+// PDF Month Selection Header
+const pdfFilter = document.getElementById('pdfMonthFilterHeader');
+const customRange = document.getElementById('customDateRangeHeader');
+if (pdfFilter) {
+  pdfFilter.addEventListener('change', function() {
+    if (this.value === 'custom') {
+      customRange.style.display = 'flex';
+    } else {
+      customRange.style.display = 'none';
+    }
+  });
+}
+
+function filterRecordsByDateRange(records, rangeType, customFrom, customTo) {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  
+  if (rangeType === 'this_month') {
+    return records.filter(r => {
+      const d = new Date(r.timestamp);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+  } else if (rangeType === 'last_month') {
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    return records.filter(r => {
+      const d = new Date(r.timestamp);
+      return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+    });
+  } else if (rangeType === 'custom' && customFrom && customTo) {
+    return records.filter(r => {
+      const d = new Date(r.timestamp).toISOString().slice(0,10);
+      return d >= customFrom && d <= customTo;
+    });
+  }
+  return records;
+}
+
+async function exportToPDFWithMonth() {
+  const loading = document.getElementById('loadingScreen');
+  if (loading) loading.style.display = 'flex';
+  
+  try {
+    const rangeType = document.getElementById('pdfMonthFilterHeader').value;
+    const customFrom = document.getElementById('pdfDateFromHeader')?.value;
+    const customTo = document.getElementById('pdfDateToHeader')?.value;
+    
+    const filteredForPDF = filterRecordsByDateRange(allRecords, rangeType, customFrom, customTo);
+    
+    if (filteredForPDF.length === 0) {
+      showNotification('⚠️ ไม่มีข้อมูลในช่วงเวลาที่เลือก', 'warning');
+      if (loading) loading.style.display = 'none';
+      return;
+    }
+    
+    await generateMultiPagePDF(filteredForPDF, rangeType, customFrom, customTo);
+    
+  } catch (error) {
+    console.error(error);
+    showNotification('❌ ส่งออก PDF ล้มเหลว', 'error');
+  } finally {
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+async function generateMultiPagePDF(records, rangeType, customFrom, customTo) {
+  const { jsPDF } = window.jspdf;
+  
+  const pdfDiv = document.createElement('div');
+  pdfDiv.style.padding = '30px';
+  pdfDiv.style.fontFamily = "'Sarabun', 'Kanit', 'TH Sarabun New', sans-serif";
+  pdfDiv.style.backgroundColor = 'white';
+  pdfDiv.style.color = '#333';
+  pdfDiv.style.width = '800px';
+  
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('th-TH');
+  const timeStr = now.toLocaleTimeString('th-TH');
+  
+  let rangeText = 'ทั้งหมด';
+  if (rangeType === 'this_month') rangeText = 'เดือนนี้';
+  else if (rangeType === 'last_month') rangeText = 'เดือนที่แล้ว';
+  else if (rangeType === 'custom') rangeText = `${customFrom} ถึง ${customTo}`;
+  
+  const totalTrips = records.length;
+  const totalDist = records.reduce((s, r) => s + (r.totalDistance || 0), 0);
+  const pendingCount = records.filter(r => r.returnStatus !== 'returned').length;
+  const returnedCount = records.filter(r => r.returnStatus === 'returned').length;
+  const returnRate = totalTrips > 0 ? ((returnedCount / totalTrips) * 100).toFixed(1) : 0;
+  
+  pdfDiv.innerHTML = `
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h1 style="color: #2e7d32; margin-bottom: 10px;">📊 รายงานการใช้รถ</h1>
+      <p style="color: #666;">ช่วงเวลา: ${rangeText}</p>
+      <p style="color: #666;">สร้างเมื่อ: ${dateStr} ${timeStr}</p>
+    </div>
+    
+    <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+      <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; flex: 1; text-align: center;">
+        <div style="font-size: 28px; font-weight: bold; color: #2e7d32;">${totalTrips}</div>
+        <div style="font-size: 12px; color: #666;">จำนวนการใช้ (ครั้ง)</div>
+      </div>
+      <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; flex: 1; text-align: center;">
+        <div style="font-size: 28px; font-weight: bold; color: #2e7d32;">${totalDist.toFixed(1)}</div>
+        <div style="font-size: 12px; color: #666;">ระยะทางรวม (กม.)</div>
+      </div>
+      <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; flex: 1; text-align: center;">
+        <div style="font-size: 28px; font-weight: bold; color: #d97706;">${pendingCount}</div>
+        <div style="font-size: 12px; color: #666;">รอคืนรถ (รายการ)</div>
+      </div>
+      <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; flex: 1; text-align: center;">
+        <div style="font-size: 28px; font-weight: bold; color: #059669;">${returnRate}%</div>
+        <div style="font-size: 12px; color: #666;">อัตราการคืนรถ</div>
+      </div>
+    </div>
+    
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+      <thead>
+        <tr style="background: #2e7d32; color: white;">
+          <th style="padding: 10px; border: 1px solid #ddd;">วันที่</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">ผู้ใช้</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">ทะเบียนรถ</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">ระยะทาง</th>
+          <th style="padding: 10px; border: 1px solid #ddd;">สถานะ</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${records.slice(0, 100).map(r => `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">${new Date(r.timestamp).toLocaleDateString('th-TH')}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${r.name || '-'}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${r.car || '-'}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${(r.totalDistance || 0).toFixed(1)} กม.</td>
+            <td style="padding: 8px; border: 1px solid #ddd; color: ${r.returnStatus === 'returned' ? '#059669' : '#d97706'}">
+              ${r.returnStatus === 'returned' ? '✅ คืนแล้ว' : '⏳ รอคืนรถ'}
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    
+    <div style="text-align: center; margin-top: 30px; font-size: 10px; color: #999;">
+      <p>รายงานนี้สร้างโดยอัตโนมัติจากระบบ CAR LOG PRO</p>
+      <p>ดูรายละเอียดเพิ่มเติม: https://car-log-history.netlify.app/</p>
+    </div>
+  `;
+  
+  document.body.appendChild(pdfDiv);
+  const canvas = await html2canvas(pdfDiv, { scale: 2, backgroundColor: '#ffffff', logging: false });
+  document.body.removeChild(pdfDiv);
+  
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const imgWidth = 210;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+  let heightLeft = imgHeight;
+  let position = 0;
+  let pageNum = 1;
+  
+  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  heightLeft -= pdf.internal.pageSize.getHeight();
+  
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pdf.internal.pageSize.getHeight();
+    pageNum++;
+  }
+  
+  pdf.save(`carlog_${rangeType}_${new Date().toISOString().slice(0,10)}.pdf`);
+  showNotification(`✅ ส่งออก PDF สำเร็จ (${records.length} รายการ, ${pageNum} หน้า)`, 'success');
+}
+
+async function loadRecords() {
+  showLoading(true);
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/get-records`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    allRecords = Array.isArray(data) ? data : [];
+    allRecords = allRecords.map(r => ({ ...r, returnStatus: r.returnStatus || 'pending' }));
+    filteredRecords = [...allRecords];
+    renderTable();
+    updateStats();
+    updateFilters();
+    renderCharts();
+    setupStatusFilterButtons();
+  } catch(e) { 
+    console.error(e); 
+    allRecords = []; 
+    filteredRecords = []; 
+    renderTable(); 
+    updateStats(); 
+  }
+  showLoading(false);
+}
+
+function updateStats() {
+  const total = allRecords.length;
+  const totalDist = allRecords.reduce((s, r) => s + (r.totalDistance || 0), 0);
+  const pending = allRecords.filter(r => r.returnStatus !== 'returned').length;
+  const returned = allRecords.filter(r => r.returnStatus === 'returned').length;
+  const rate = total > 0 ? ((returned / total) * 100).toFixed(1) : 0;
+  
+  document.getElementById('totalRecords').innerHTML = total.toLocaleString();
+  document.getElementById('totalDistance').innerHTML = totalDist.toFixed(1);
+  document.getElementById('pendingReturns').innerHTML = pending.toLocaleString();
+  document.getElementById('returnRate').innerHTML = rate + '%';
+}
+
+function setupStatusFilterButtons() {
+  const buttons = document.querySelectorAll('.status-filter-btn');
+  buttons.forEach(btn => {
+    btn.removeEventListener('click', handleStatusFilterClick);
+    btn.addEventListener('click', handleStatusFilterClick);
+  });
+}
+
+function handleStatusFilterClick(e) {
+  const btn = e.currentTarget;
+  const status = btn.dataset.status;
+  currentStatusFilter = status;
+  document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function renderTable() {
+  const start = (currentPage-1)*CONFIG.RECORDS_PER_PAGE;
+  const pageData = filteredRecords.slice(start, start+CONFIG.RECORDS_PER_PAGE);
+  const tbody = document.getElementById('recordsTable');
+  if(pageData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:60px"><i class="fas fa-database" style="font-size:40px; color:#ccc; margin-bottom:12px; display:block"></i>ไม่มีข้อมูล<br>กรุณาเลือกเงื่อนไขอื่นหรือเพิ่มข้อมูล</div>NonNull</tbody>';
+    document.getElementById('pagination').innerHTML = '';
+    document.getElementById('paginationInfo').textContent = 'แสดง 0-0 จาก 0 รายการ';
+    return;
+  }
+  
+  let html = '';
+  pageData.forEach(r => {
+    const hasPicture = r.pictureUrl && r.pictureUrl !== '' && r.pictureUrl !== null;
+    const avatarStyle = hasPicture ? `background-image: url(${r.pictureUrl}); background-size: cover; background-position: center;` : `background: linear-gradient(135deg, #2e7d32, #81c784);`;
+    const avatarContent = hasPicture ? '' : (r.name ? r.name.charAt(0).toUpperCase() : '?');
+    html += `<tr>
+        <td style="font-weight:500">${formatDate(r.timestamp)}<br><span style="font-size:12px; color:var(--text-tertiary)">${formatTime(r.timestamp)}</span></td>
+        <td><div class="driver-cell"><div class="driver-avatar" style="${avatarStyle}">${avatarContent}</div>${escapeHtml(r.name||'ไม่ระบุ')}</div></td>
+        <td>${r.phone||'-'}</td>
+        <td><span class="badge-vehicle">${r.car||'-'}</span></td>
+        <td>${parseFloat(r.mileage||0).toLocaleString()}</td>
+        <td><span class="distance-value">${r.totalDistance||0}</span> กม.</td>
+        <td><div style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(r.reason||'-')}</div></td>
+        <td>${getStatusBadge(r.returnStatus)}</td>
+        <td><button class="btn-icon" onclick="showDetail('${r._id}')"><i class="fas fa-eye"></i></button></td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filteredRecords.length / CONFIG.RECORDS_PER_PAGE);
+  const container = document.getElementById('pagination');
+  const info = document.getElementById('paginationInfo');
+  const start = (currentPage-1)*CONFIG.RECORDS_PER_PAGE + 1;
+  const end = Math.min(currentPage*CONFIG.RECORDS_PER_PAGE, filteredRecords.length);
+  info.textContent = `แสดง ${start}-${end} จาก ${filteredRecords.length} รายการ`;
+  if(total <= 1) { container.innerHTML = ''; return; }
+  let html = '';
+  for(let i=1;i<=total;i++) html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="changePage(${i})">${i}</button>`;
+  container.innerHTML = html;
+}
+
+function changePage(p) { currentPage = p; renderTable(); }
+
+function updateFilters() {
+  const names = [...new Set(allRecords.map(r=>r.name).filter(Boolean))];
+  const cars = [...new Set(allRecords.map(r=>r.car).filter(Boolean))];
+  document.getElementById('filterName').innerHTML = '<option value="">ทั้งหมด</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+  document.getElementById('filterCar').innerHTML = '<option value="">ทั้งหมด</option>'+cars.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+function applyFilters() {
+  const search = document.getElementById('searchName').value.toLowerCase();
+  const name = document.getElementById('filterName').value;
+  const car = document.getElementById('filterCar').value;
+  const from = document.getElementById('filterDateFrom').value;
+  const to = document.getElementById('filterDateTo').value;
+  
+  filteredRecords = allRecords.filter(r => {
+    if(search && !`${r.name} ${r.phone} ${r.reason}`.toLowerCase().includes(search)) return false;
+    if(name && r.name !== name) return false;
+    if(car && r.car !== car) return false;
+    if(from && new Date(r.timestamp).toISOString().slice(0,10) < from) return false;
+    if(to && new Date(r.timestamp).toISOString().slice(0,10) > to) return false;
+    if(currentStatusFilter === 'pending' && r.returnStatus === 'returned') return false;
+    if(currentStatusFilter === 'returned' && r.returnStatus !== 'returned') return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+  renderCharts();
+}
+
+function clearFilters() {
+  document.getElementById('searchName').value = '';
+  document.getElementById('filterName').value = '';
+  document.getElementById('filterCar').value = '';
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  currentStatusFilter = 'all';
+  document.querySelectorAll('.status-filter-btn').forEach(btn => { btn.classList.remove('active'); if(btn.dataset.status === 'all') btn.classList.add('active'); });
+  applyFilters();
+}
+
+function formatDate(d) { return new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}); }
+function formatTime(d) { return new Date(d).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }
+
+function showDetail(id) {
+  const r = allRecords.find(x => x._id === id);
+  if (!r) return;
+  
+  const hasPicture = r.pictureUrl && r.pictureUrl !== '';
+  
+  // สร้าง HTML สำหรับพิกัดปลายทาง
+  let destinationsHtml = '';
+  if (r.destinations && r.destinations.length > 0) {
+    destinationsHtml = `
+      <div class="detail-section-full">
+        <div class="detail-section-title">
+          <i class="fas fa-map-marked-alt"></i> 📍 พิกัดปลายทาง
+        </div>
+        <div class="destinations-grid">
+          ${r.destinations.map((dest, idx) => `
+            <div class="destination-card">
+              <div class="dest-point">จุดที่ ${idx + 1}</div>
+              <div class="dest-coord">
+                <span class="coord-label">ละติจูด:</span> ${dest.lat?.toFixed(6) || '-'}
+              </div>
+              <div class="dest-coord">
+                <span class="coord-label">ลองจิจูด:</span> ${dest.lng?.toFixed(6) || '-'}
+              </div>
+              <a href="https://www.google.com/maps?q=${dest.lat},${dest.lng}" target="_blank" class="map-link">
+                <i class="fas fa-map"></i> เปิด Google Maps
+              </a>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  const modalHtml = `
+    <div class="modal fade modal-custom" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-car"></i>
+              <span>รายละเอียดการใช้งาน</span>
+            </h5>
+          </div>
+          <div class="modal-body">
+            <!-- แถวที่ 1: ผู้ขับขี่ + ข้อมูลรถ -->
+            <div class="detail-row">
+              <div class="detail-col">
+                <div class="detail-section">
+                  <div class="detail-section-title">
+                    <i class="fas fa-user-circle"></i> 👤 ข้อมูลผู้ขับขี่
+                  </div>
+                  <div class="driver-info">
+                    <div class="driver-avatar-lg" style="background-image: url(${r.pictureUrl || ''}); ${!hasPicture ? 'background: linear-gradient(135deg, #2e7d32, #81c784);' : ''}">
+                      ${!hasPicture ? (r.name ? r.name.charAt(0).toUpperCase() : '?') : ''}
+                    </div>
+                    <div class="driver-details">
+                      <div class="driver-name">${escapeHtml(r.name) || 'ไม่ระบุชื่อ'}</div>
+                      <div class="driver-phone"><i class="fas fa-phone"></i> ${r.phone || '-'}</div>
+                      <div class="driver-car"><i class="fas fa-car"></i> ${escapeHtml(r.car) || '-'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="detail-col">
+                <div class="detail-section">
+                  <div class="detail-section-title">
+                    <i class="fas fa-road"></i> 🚗 ข้อมูลการเดินทาง
+                  </div>
+                  <div class="travel-stats">
+                    <div class="travel-stat">
+                      <span class="stat-label">ระยะทาง</span>
+                      <span class="stat-value">${r.totalDistance || 0} <span class="stat-unit">กม.</span></span>
+                    </div>
+                    <div class="travel-stat">
+                      <span class="stat-label">เวลาเดินทาง</span>
+                      <span class="stat-value">${r.totalTime || 0} <span class="stat-unit">นาที</span></span>
+                    </div>
+                    <div class="travel-stat">
+                      <span class="stat-label">เลขไมล์เริ่มต้น</span>
+                      <span class="stat-value">${parseFloat(r.mileage || 0).toLocaleString()} <span class="stat-unit">กม.</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- แถวที่ 2: วัตถุประสงค์ + สถานะ -->
+            <div class="detail-row">
+              <div class="detail-col">
+                <div class="detail-section">
+                  <div class="detail-section-title">
+                    <i class="fas fa-pen-alt"></i> 📝 วัตถุประสงค์
+                  </div>
+                  <div class="reason-text">${escapeHtml(r.reason) || '-'}</div>
+                </div>
+              </div>
+              <div class="detail-col">
+                <div class="detail-section">
+                  <div class="detail-section-title">
+                    <i class="fas fa-exchange-alt"></i> 🔄 สถานะ
+                  </div>
+                  <div class="status-box ${r.returnStatus === 'returned' ? 'status-returned-box' : 'status-pending-box'}">
+                    <i class="fas ${r.returnStatus === 'returned' ? 'fa-check-circle' : 'fa-clock'}"></i>
+                    <span>${r.returnStatus === 'returned' ? 'คืนรถสำเร็จ' : 'รอการคืนรถ'}</span>
+                  </div>
+                  ${r.returnedAt ? `
+                    <div class="return-time">
+                      <i class="fas fa-calendar-check"></i> คืนเมื่อ: ${new Date(r.returnedAt).toLocaleString('th-TH')}
+                    </div>
+                  ` : ''}
+                  ${r.durationText ? `
+                    <div class="duration-text">
+                      <i class="fas fa-hourglass-half"></i> ระยะเวลาที่ใช้: ${r.durationText}
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+            
+            <!-- พิกัดปลายทาง (ถ้ามี) -->
+            ${destinationsHtml}
+          </div>
+          <div class="modal-footer">
+            <button class="btn-modal-close" data-bs-dismiss="modal">
+              <i class="fas fa-times-circle"></i> ปิด
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const modalDiv = document.createElement('div');
+  modalDiv.innerHTML = modalHtml;
+  document.body.appendChild(modalDiv);
+  const modal = new bootstrap.Modal(modalDiv.querySelector('.modal'));
+  modal.show();
+  modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+}
+
+function renderCharts() {
+  const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  const monthly = Array(12).fill(0);
+  allRecords.forEach(r=>{ if(r.timestamp) monthly[new Date(r.timestamp).getMonth()]++; });
+  if(monthlyChart) monthlyChart.destroy();
+  monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: { labels: months, datasets: [{ label: 'จำนวนครั้ง', data: monthly, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.05)', borderWidth: 2, pointBackgroundColor: '#2e7d32', pointBorderColor: 'white', tension: 0.3, fill: true }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } }, scales: { y: { grid: { color: '#e8f5e9' }, ticks: { stepSize: 1 } } } }
+  });
+  const carCount = {}; allRecords.forEach(r=>carCount[r.car]=(carCount[r.car]||0)+1);
+  const carLabels = Object.keys(carCount).slice(0,6);
+  const carData = carLabels.map(l=>carCount[l]);
+  if(carUsageChart) carUsageChart.destroy();
+  carUsageChart = new Chart(document.getElementById('carUsageChart'), {
+    type: 'doughnut',
+    data: { labels: carLabels, datasets: [{ data: carData, backgroundColor: ['#2e7d32','#81c784','#a5d6a7','#c8e6c9','#e8f5e9','#f1f8e9'] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+  });
+}
+
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.style.cssText = `position:fixed;top:20px;right:20px;background:${type === 'success' ? '#27ae60' : '#e74c3c'};color:white;padding:12px 20px;border-radius:8px;z-index:10001;font-size:14px;animation:slideIn 0.3s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);`;
+  notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
+}
+
+// Event listeners
+document.getElementById('searchName').addEventListener('input', applyFilters);
+document.getElementById('filterName').addEventListener('change', applyFilters);
+document.getElementById('filterCar').addEventListener('change', applyFilters);
+document.getElementById('filterDateFrom').addEventListener('change', applyFilters);
+document.getElementById('filterDateTo').addEventListener('change', applyFilters);
+
+// Bootstrap
+const bsScript = document.createElement('script');
+bsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js';
+bsScript.onload = () => loadRecords();
+document.head.appendChild(bsScript);
+</script>
+</body>
+</html>
